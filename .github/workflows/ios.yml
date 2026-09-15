@@ -52,32 +52,34 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO
 
-      - name: Find MySchedule.app
+      - name: Find application
         run: |
-          echo "Searching for MySchedule.app..."
-          find MySchedule-ios -name "MySchedule.app" -type d -print
-
-      - name: Create Payload folder
-        run: |
-          mkdir -p Payload
-          APP_PATH=$(find MySchedule-ios -name "MySchedule.app" -type d | head -n 1)
-
-          if [ -z "$APP_PATH" ]; then
-            echo "ERROR: MySchedule.app was not found"
-            exit 1
-          fi
-
-          echo "Found app:"
-          echo "$APP_PATH"
-
-          cp -R "$APP_PATH" Payload/MySchedule.app
+          echo "=== Searching for .app files ==="
+          find . -type d -name "*.app" -print
 
       - name: Create IPA
         run: |
+          APP_PATH=$(find . -type d -name "*.app" | head -n 1)
+
+          if [ -z "$APP_PATH" ]; then
+            echo "ERROR: No .app file was found"
+            echo "=== Build directory ==="
+            find . -maxdepth 5 -type d -print
+            exit 1
+          fi
+
+          echo "Found application:"
+          echo "$APP_PATH"
+
+          rm -rf Payload
+          mkdir Payload
+
+          cp -R "$APP_PATH" Payload/MySchedule.app
+
+          echo "=== Creating IPA ==="
           zip -r MySchedule.ipa Payload
 
-      - name: Show IPA
-        run: |
+          echo "=== IPA created ==="
           ls -lh MySchedule.ipa
 
       - name: Upload IPA
