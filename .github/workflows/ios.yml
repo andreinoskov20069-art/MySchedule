@@ -1,4 +1,4 @@
-name: Build iOS App
+name: Build iOS IPA
 
 on:
   workflow_dispatch:
@@ -19,15 +19,16 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          brew install autoconf automake
-          pip install cython
+          brew install autoconf automake libtool pkg-config
+          brew link libtool
+          pip install Cython==3.2.0
           pip install kivy-ios
 
       - name: Build iOS dependencies
         run: |
           toolchain build python3 kivy
 
-      - name: Prepare application folder
+      - name: Prepare application
         run: |
           mkdir -p app
           cp main.py app/main.py
@@ -41,7 +42,7 @@ jobs:
           cd MySchedule-ios
           xcodebuild -list
 
-      - name: Build Xcode project
+      - name: Build iOS application
         run: |
           cd MySchedule-ios
           xcodebuild \
@@ -51,9 +52,44 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO
 
-      - name: Save build files
+      - name: Find MySchedule.app
+        run: |
+          echo "Searching for MySchedule.app..."
+          find MySchedule-ios -name "MySchedule.app" -type d -print
+
+      - name: Create Payload folder
+        run: |
+          mkdir -p Payload
+
+          APP_PATH=$(find MySchedule-ios -name "MySchedule.app" -type d | head -n 1)
+
+          if [ -z "$APP_PATH" ]; then
+            echo "ERROR: MySchedule.app was not found"
+            exit 1
+          fi
+
+          echo "Found app:"
+          echo "$APP_PATH"
+
+          cp -R "$APP_PATH" Payload/MySchedule.app
+
+      - name: Create IPA
+        run: |
+          zip -r MySchedule.ipa Payload
+
+      - name: Show IPA
+        run: |
+          ls -lh MySchedule.ipa
+
+      - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
-          name: MySchedule-iOS
-          path: |
-            MySchedule-ios/build
+          name: MySchedule-IPA
+          path: MySchedule.ipa
+
+      - name: Upload APP
+        uses: actions/upload-artifact@v4
+        with:
+          name: MySchedule-APP
+          path: Payload/MySchedule.app
+```
