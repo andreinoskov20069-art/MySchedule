@@ -31,15 +31,20 @@ jobs:
         run: |
           toolchain create MySchedule ./main.py
 
+      - name: Show Xcode project
+        run: |
+          cd MySchedule-ios
+          xcodebuild -list
+
       - name: Build Xcode project
         run: |
           cd MySchedule-ios
           xcodebuild \
             -project MySchedule.xcodeproj \
-            -scheme MySchedule \
             -sdk iphoneos \
             -configuration Release \
-            CODE_SIGNING_ALLOWED=NO
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO
 
       - name: Save build files
         uses: actions/upload-artifact@v4
