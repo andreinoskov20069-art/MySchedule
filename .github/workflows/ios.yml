@@ -1,0 +1,47 @@
+name: Build iOS App
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-26
+
+    steps:
+      - name: Download project
+        uses: actions/checkout@v4
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install kivy-ios
+
+      - name: Build iOS dependencies
+        run: |
+          toolchain build python3 kivy
+
+      - name: Create Xcode project
+        run: |
+          toolchain create MySchedule ./main.py
+
+      - name: Build Xcode project
+        run: |
+          cd MySchedule-ios
+          xcodebuild \
+            -project MySchedule.xcodeproj \
+            -scheme MySchedule \
+            -sdk iphoneos \
+            -configuration Release \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Save build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: MySchedule-iOS
+          path: |
+            MySchedule-ios/build
