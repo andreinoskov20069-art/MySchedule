@@ -27,9 +27,14 @@ jobs:
         run: |
           toolchain build python3 kivy
 
+      - name: Prepare application folder
+        run: |
+          mkdir -p app
+          cp main.py app/main.py
+
       - name: Create Xcode project
         run: |
-          toolchain create MySchedule ./main.py
+          toolchain create MySchedule "$PWD/app"
 
       - name: Show Xcode project
         run: |
@@ -41,8 +46,8 @@ jobs:
           cd MySchedule-ios
           xcodebuild \
             -project MySchedule.xcodeproj \
-            -sdk iphoneos \
             -configuration Release \
+            -sdk iphoneos \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO
 
