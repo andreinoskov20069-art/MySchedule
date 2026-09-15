@@ -19,6 +19,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          brew install autoconf automake
+          pip install cython
           pip install kivy-ios
 
       - name: Build iOS dependencies
